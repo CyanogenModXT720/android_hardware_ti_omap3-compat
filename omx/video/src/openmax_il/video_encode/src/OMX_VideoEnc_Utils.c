@@ -140,19 +140,19 @@ OMX_U32 VIDENC_STRUCT_H264DEFBITRATE [VIDENC_MAXBITRATES][2] = {
 /*2*/    {320 * 240, 400000},     /*400KBps*/
 /*3*/    {352 * 288, 500000},     /*500kBps*/
 /*4*/    {640 * 480, 1500000},    /*1.5MBps*/
-/*5*/    {720 * 480, 2000000},    /*2MBps*/
+/*5*/    {720 * 480, 3000000},    /*2MBps*/
 /*6*/    {720 * 576, 3000000},    /*3MBps*/
-/*7*/    {1280 * 720, 3000000},   /*3MBps*/
+/*7*/    {1280 * 720, 8000000},   /*3MBps*/
 };
 
 OMX_U32 VIDENC_STRUCT_MPEG4DEFBITRATE [VIDENC_MAXBITRATES][2] = {
-/*1*/    {176 * 144, 128000},     /*128KBps*/
+/*1*/    {176 * 144, 300000},     /*128KBps*/
 /*2*/    {320 * 240, 400000},     /*400KBps*/
 /*3*/    {352 * 288, 500000},     /*500kBps*/
-/*4*/    {640 * 480, 1500000},    /*1.5MBps*/
-/*5*/    {720 * 480, 2000000},    /*2MBps*/
-/*6*/    {720 * 576, 3000000},    /*3MBps*/
-/*7*/    {1280 * 720, 3000000},   /*3MBps*/
+/*4*/    {640 * 480, 300000},    /*1.5MBps*/
+/*5*/    {720 * 480, 3500000},    /*2MBps*/
+/*6*/    {720 * 576, 3500000},    /*3MBps*/
+/*7*/    {1280 * 720, 8000000},   /*3MBps*/
 };
 
 OMX_U32 VIDENC_STRUCT_H263DEFBITRATE [VIDENC_MAXBITRATES][2] = {
@@ -160,9 +160,9 @@ OMX_U32 VIDENC_STRUCT_H263DEFBITRATE [VIDENC_MAXBITRATES][2] = {
 /*2*/    {320 * 240, 400000},     /*400KBps*/
 /*3*/    {352 * 288, 500000},     /*500kBps*/
 /*4*/    {640 * 480, 1500000},    /*1.5MBps*/
-/*5*/    {720 * 480, 2000000},    /*2MBps*/
+/*5*/    {720 * 480, 3000000},    /*2MBps*/
 /*6*/    {720 * 576, 3000000},    /*3MBps*/
-/*7*/    {1280 * 720, 3000000},   /*3MBps*/
+/*7*/    {1280 * 720, 8000000},   /*3MBps*/
 };
 /*--------macro definitions ---------------------------------------------------*/
 
@@ -1380,7 +1380,7 @@ OMX_ERRORTYPE OMX_VIDENC_HandleCommandStateSetIdle(VIDENC_COMPONENT_PRIVATE* pCo
                             eError = RMProxy_NewSendCommand(pComponentPrivate->pHandle,
                                                          RMProxy_RequestResource,
                                                          OMX_H264_Encode_COMPONENT,
-                                                         VIDEO_ENCODER_MHZ,
+                                                         90, 
                                                          3456,
                                                          &(pComponentPrivate->cRMCallBack));
 
@@ -1390,7 +1390,7 @@ OMX_ERRORTYPE OMX_VIDENC_HandleCommandStateSetIdle(VIDENC_COMPONENT_PRIVATE* pCo
                             eError = RMProxy_NewSendCommand(pComponentPrivate->pHandle,
                                                          RMProxy_RequestResource,
                                                          OMX_H264_Encode_COMPONENT,
-                                                         VIDEO_ENCODER_MHZ,
+                                                         140, 
                                                          3456,
                                                          &(pComponentPrivate->cRMCallBack));
                             break;
@@ -1403,7 +1403,9 @@ OMX_ERRORTYPE OMX_VIDENC_HandleCommandStateSetIdle(VIDENC_COMPONENT_PRIVATE* pCo
                             eError = RMProxy_NewSendCommand(pComponentPrivate->pHandle,
                                                             RMProxy_RequestResource,
                                                             OMX_H264_Encode_COMPONENT,
-                                                            VIDEO_ENCODER_MHZ,
+                                                            ((pPortDefOut->format.video.nFrameHeight >= 640 ||
+                                                              pPortDefOut->format.video.nFrameWidth >= 480) &&
+                                                             pPortDefIn->format.video.xFramerate > 15) ? 370 : 245,
                                                             3456,
                                                             &(pComponentPrivate->cRMCallBack));
                     }
@@ -1417,7 +1419,7 @@ OMX_ERRORTYPE OMX_VIDENC_HandleCommandStateSetIdle(VIDENC_COMPONENT_PRIVATE* pCo
                             eError = RMProxy_NewSendCommand(pComponentPrivate->pHandle,
                                                          RMProxy_RequestResource,
                                                          OMX_MPEG4_Encode_COMPONENT,
-                                                         VIDEO_ENCODER_MHZ,
+                                                         30, 
                                                          3456,
                                                          &(pComponentPrivate->cRMCallBack));
                             break;
@@ -1426,7 +1428,7 @@ OMX_ERRORTYPE OMX_VIDENC_HandleCommandStateSetIdle(VIDENC_COMPONENT_PRIVATE* pCo
                             eError = RMProxy_NewSendCommand(pComponentPrivate->pHandle,
                                                          RMProxy_RequestResource,
                                                          OMX_MPEG4_Encode_COMPONENT,
-                                                         VIDEO_ENCODER_MHZ,
+                                                         110, 
                                                          3456,
                                                          &(pComponentPrivate->cRMCallBack));
                             break;
@@ -1435,7 +1437,7 @@ OMX_ERRORTYPE OMX_VIDENC_HandleCommandStateSetIdle(VIDENC_COMPONENT_PRIVATE* pCo
                             eError = RMProxy_NewSendCommand(pComponentPrivate->pHandle,
                                                          RMProxy_RequestResource,
                                                          OMX_MPEG4_Encode_COMPONENT,
-                                                         VIDEO_ENCODER_MHZ,
+                                                         300, 
                                                          3456,
                                                          &(pComponentPrivate->cRMCallBack));
                     }
@@ -1448,7 +1450,7 @@ OMX_ERRORTYPE OMX_VIDENC_HandleCommandStateSetIdle(VIDENC_COMPONENT_PRIVATE* pCo
                             eError = RMProxy_NewSendCommand(pComponentPrivate->pHandle,
                                                          RMProxy_RequestResource,
                                                          OMX_H263_Encode_COMPONENT,
-                                                         VIDEO_ENCODER_MHZ,
+                                                         30, 
                                                          3456,
                                                          &(pComponentPrivate->cRMCallBack));
                             break;
@@ -1458,7 +1460,7 @@ OMX_ERRORTYPE OMX_VIDENC_HandleCommandStateSetIdle(VIDENC_COMPONENT_PRIVATE* pCo
                             eError = RMProxy_NewSendCommand(pComponentPrivate->pHandle,
                                                          RMProxy_RequestResource,
                                                          OMX_H263_Encode_COMPONENT,
-                                                         VIDEO_ENCODER_MHZ,
+                                                         90, 
                                                          3456,
                                                          &(pComponentPrivate->cRMCallBack));
                     }
@@ -2111,6 +2113,8 @@ OMX_ERRORTYPE OMX_VIDENC_HandleCommandStateSetLoaded (VIDENC_COMPONENT_PRIVATE* 
             PERF_Boundary(pComponentPrivate->pPERFcomp,
                           PERF_BoundaryStart | PERF_BoundaryCleanup);
     #endif
+        if ( pPortDefIn->bEnabled == OMX_TRUE || pPortDefOut->bEnabled == OMX_TRUE )
+        {
             pthread_mutex_lock(&pComponentPrivate->videoe_mutex_app);
             while ( (pPortDefIn->bPopulated) || (pPortDefOut->bPopulated))
             {
@@ -2121,6 +2125,7 @@ OMX_ERRORTYPE OMX_VIDENC_HandleCommandStateSetLoaded (VIDENC_COMPONENT_PRIVATE* 
     #endif
             }
             pthread_mutex_unlock(&pComponentPrivate->videoe_mutex_app);
+			}
 
     #ifdef RESOURCE_MANAGER_ENABLED /* Resource Manager Proxy Calls */
             if (pPortDefOut->format.video.eCompressionFormat == OMX_VIDEO_CodingAVC)
@@ -4212,15 +4217,18 @@ OMX_U32 GetMaxAVCBufferSize(OMX_U32 width, OMX_U32 height)
         MaxCPB = 2000;
     }
     else if(nMacroBlocks <= 792) {
-        MaxCPB = 4000;
+        MaxCPB = 10000;
     }
     else if(nMacroBlocks <= 1620) {
         /* Note - Max bitrate in this case is assumed to max 4 Mbps to limit the buffer size 
            If bitrate in this particular case could be higher than 4 Mbps, increase MxCPB value */
-        MaxCPB = 4000;
-    }
-    else
         MaxCPB = 14000;
+    }
+	else if(nMacroBlocks <= 3600) {
+		MaxCPB = 62500;
+	}
+    else
+        MaxCPB = 240000;
 
     /* MaxCPB are in units of 1200 bits i.e. 150 bytes */
     /* Return  buffer size in bytes*/

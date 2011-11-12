@@ -927,12 +927,12 @@ sDynamicFormat = getenv("FORMAT");
     OMX_CONF_INIT_STRUCT(pCompPortIn->pBitRateType, OMX_VIDEO_PARAM_BITRATETYPE);
     pCompPortIn->pBitRateType->nPortIndex = VIDENC_INPUT_PORT;
     pCompPortIn->pBitRateType->eControlRate = OMX_Video_ControlRateDisable;
-    pCompPortIn->pBitRateType->nTargetBitrate = 0;
+	pCompPortIn->pBitRateType->nTargetBitrate = 64000;
 
     OMX_CONF_INIT_STRUCT(pCompPortOut->pBitRateType, OMX_VIDEO_PARAM_BITRATETYPE);
     pCompPortOut->pBitRateType->nPortIndex = VIDENC_OUTPUT_PORT;
     pCompPortOut->pBitRateType->eControlRate = OMX_Video_ControlRateConstant;
-    pCompPortOut->pBitRateType->nTargetBitrate = pCompPortOut->pBitRateTypeConfig->nEncodeBitrate;
+	pCompPortOut->pBitRateType->nTargetBitrate = 64000;
 
     /*set the capability Flags needed by Opencore*/
     pComponentPrivate->pCapabilityFlags->iIsOMXComponentMultiThreaded=OMX_TRUE;
@@ -1687,15 +1687,15 @@ static OMX_ERRORTYPE GetParameter (OMX_IN OMX_HANDLETYPE hComponent,
        switch(pCompPortOut->pPortDef->format.video.eCompressionFormat)
        {
           case OMX_VIDEO_CodingH263:
-             pProfileLevel = SupportedH263ProfileLevels;
+					pProfileLevel = &SupportedH263ProfileLevels;
              nNumberOfProfiles = sizeof(SupportedH263ProfileLevels) / sizeof (VIDEO_PROFILE_LEVEL_TYPE);
              break;
           case OMX_VIDEO_CodingMPEG4:
-             pProfileLevel = SupportedMPEG4ProfileLevels;
+					pProfileLevel = &SupportedMPEG4ProfileLevels;
              nNumberOfProfiles = sizeof(SupportedMPEG4ProfileLevels) / sizeof (VIDEO_PROFILE_LEVEL_TYPE);
              break;
            case OMX_VIDEO_CodingAVC:
-             pProfileLevel = SupportedAVCProfileLevels;
+					pProfileLevel = &SupportedAVCProfileLevels;
              nNumberOfProfiles = sizeof(SupportedAVCProfileLevels) / sizeof (VIDEO_PROFILE_LEVEL_TYPE);
              break;
            default:

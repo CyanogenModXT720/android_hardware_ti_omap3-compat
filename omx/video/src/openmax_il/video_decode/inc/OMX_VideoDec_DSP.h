@@ -56,8 +56,10 @@
 
 #ifndef UNDER_CE
     #define H264_DEC_NODE_DLL  "h264vdec_sn.dll64P"
+    #define H264720P_DEC_NODE_DLL  "h264ingdec_sn.dll64P"  //w21129 Ãß°¡
     #define MP4_DEC_NODE_DLL   "mp4vdec_sn.dll64P"
-    #define MP4720P_DEC_NODE_DLL   "mpeg4aridec_sn.dll64P"
+    // w21129 //#define MP4720P_DEC_NODE_DLL   "mpeg4aridec_sn.dll64P"
+    #define MP4720P_DEC_NODE_DLL   "mpeg4ingdec_sn.dll64P"
     #define MP2_DEC_NODE_DLL   "mp2vdec_sn.dll64P"
     #define WMV_DEC_NODE_DLL   "wmv9dec_sn.dll64P"
     #define RINGIO_NODE_DLL    "ringio.dll64P"

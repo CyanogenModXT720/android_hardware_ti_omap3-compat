@@ -49,6 +49,7 @@ extern "C" {
 #define LCD_HEIGHT 854
 
 #define CACHEABLE_BUFFERS 0x1
+#define OVERLAY_PRIVATE_DECIMATE_BY_2  0x921
 
 #define ALL_BUFFERS_FLUSHED -66 //shared with Camera/Video Playback HAL
 
@@ -877,8 +878,15 @@ static int overlay_data_setParameter(struct overlay_data_device_t *dev,
         return -1;
     }
 
-    if (param == CACHEABLE_BUFFERS)
+    switch (param)
+    {
+    case CACHEABLE_BUFFERS:
         ctx->cacheable_buffers = value;
+        break;
+    case OVERLAY_PRIVATE_DECIMATE_BY_2:
+        v4l2_overlay_set_decimate_by_2(ctx->ctl_fd, value);
+        break;
+    }
 
     //ret = v4l2_overlay_set_attributes(ctx->ctl_fd, param, value);
     return ( ret );

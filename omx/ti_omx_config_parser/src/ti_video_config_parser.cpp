@@ -150,6 +150,12 @@ OSCL_EXPORT_REF int16 ti_video_config_parser(tiVideoConfigParserInputs *aInputs,
         {
             return retval;
         }
+        // VideoFilter : Contents blocking over-frame contents.
+	    if ((width  > WVGA_MAX_WIDTH || height > WVGA_MAX_HEIGHT) && 0 == oscl_strncmp (pComponentName, TI_VID_DEC, oscl_strlen (TI_VID_DEC)))
+        {
+            return -1;
+        }
+	    // VideoFilter : Contents blocking over-frame contents.
         aOutputs->width  = (uint32)display_width;
         aOutputs->height = (uint32)display_height;
         aOutputs->profile = (uint32)profile_idc;

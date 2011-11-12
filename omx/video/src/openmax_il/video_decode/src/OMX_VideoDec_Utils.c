@@ -56,6 +56,19 @@
 #include "OMX_VideoDec_Thread.h"
 #define LOG_TAG "TI_Video_Decoder"
 /*----------------------------------------------------------------------------*/
+// w21129 : this fuctions is very highly dependent on H/W devices, 
+// it just tested only SholesTable UMTS device. 
+// Other devices, you should remove this define
+#define FEATURE_COMPOSITE_TVOUT 
+#if defined(FEATURE_COMPOSITE_TVOUT)
+// We should use this attach-status (better than activation-status) for handling on time.
+// Caution! This is very OMAP specific implementation for TVOUT.
+// It's very exceptional handling for TVOUT video overlay.
+#define TVOUT_DETECTION_SYSFS_PATH      "/sys/class/switch/h2w/state"
+#define TVOUT_DETECTION_READ_ATTACH     "32"
+#define TVOUT_OVERLAY_WIDTH_MAX    960
+OMX_BOOL checkIfTVOUTOnDisplay(int mVideoWidth);
+#endif //defined(FEATURE_COMPOSITE_TVOUT)
 /**
   * VIDDEC_GetRMFrecuency() Return the value for frecuecny to use RM.
   **/
@@ -5838,7 +5851,7 @@ OMX_ERRORTYPE VIDDEC_HandleDataBuf_FromApp(VIDDEC_COMPONENT_PRIVATE *pComponentP
         }
 
         if(pComponentPrivate->iEndofInputSent == 0){
-            //pComponentPrivate->iEndofInputSent = 1;
+            pComponentPrivate->iEndofInputSent = 1;
             OMX_PRBUFFER1(pComponentPrivate->dbg, "Sending EOS Empty eBufferOwner 0x%x\n", pBufferPrivate->eBufferOwner);
             if(pComponentPrivate->eFirstBuffer.bSaveFirstBuffer == OMX_FALSE){
                 OMX_MEMFREE_STRUCT_DSPALIGN(pComponentPrivate->pUalgParams,OMX_PTR);
@@ -5945,7 +5958,7 @@ OMX_ERRORTYPE VIDDEC_HandleDataBuf_FromApp(VIDDEC_COMPONENT_PRIVATE *pComponentP
                 pComponentPrivate->eLCMLState != VidDec_LCML_State_Destroy &&
                 pComponentPrivate->pLCML != NULL){
                 pComponentPrivate->pTempBuffHead.nFlags = 0;
-                //pComponentPrivate->pTempBuffHead.nFlags |= OMX_BUFFERFLAG_EOS;
+                pComponentPrivate->pTempBuffHead.nFlags |= OMX_BUFFERFLAG_EOS;
                 pComponentPrivate->pTempBuffHead.nFilledLen = 0;
                 pComponentPrivate->pTempBuffHead.pBuffer = NULL;
                 
@@ -6707,6 +6720,14 @@ OMX_ERRORTYPE VIDDEC_HandleDataBuf_FromDsp(VIDDEC_COMPONENT_PRIVATE *pComponentP
                 VIDDEC_Propagate_Mark(pComponentPrivate, pBuffHead);
                 pBufferPrivate->eBufferOwner = VIDDEC_BUFFER_WITH_CLIENT;
                 OMX_PRBUFFER1(pComponentPrivate->dbg, "standalone buffer eBufferOwner 0x%x  --  %lx\n", pBufferPrivate->eBufferOwner,pBuffHead->nFlags);
+                if((pBuffHead->nFlags & OMX_BUFFERFLAG_EOS)){
+                    pComponentPrivate->cbInfo.EventHandler(pComponentPrivate->pHandle,
+                                                        pComponentPrivate->pHandle->pApplicationPrivate,
+                                                        OMX_EventBufferFlag,
+                                                        VIDDEC_OUTPUT_PORT,
+                                                        OMX_BUFFERFLAG_EOS,
+                                                        NULL);
+                }
                 VIDDEC_FillBufferDone(pComponentPrivate, pBuffHead);
             }
         }
@@ -6842,6 +6863,14 @@ OMX_ERRORTYPE VIDDEC_InitDSP_WMVDec(VIDDEC_COMPONENT_PRIVATE* pComponentPrivate)
     lcml_dsp->Alignment = 0;
     lcml_dsp->Priority  = 5;
 
+    // vktx63 : Contents blocking QVGA over-frame.
+    if ((OMX_U16)(pComponentPrivate->pInPortDef->format.video.nFrameWidth > 320) ||
+        (OMX_U16)(pComponentPrivate->pInPortDef->format.video.nFrameHeight > 240))
+    {
+        eError = OMX_ErrorUnsupportedSetting;
+        goto EXIT;
+    }
+    // vktx63 : Contents blocking QVGA over-frame.
     if(pComponentPrivate->ProcessMode == 0){
         if(pComponentPrivate->wmvProfile == VIDDEC_WMV_PROFILEMAX)
         {
@@ -7056,6 +7085,33 @@ OMX_ERRORTYPE VIDDEC_InitDSP_H264Dec(VIDDEC_COMPONENT_PRIVATE* pComponentPrivate
     lcml_dsp->Out_BufInfo.DataTrMethod = DMM_METHOD;
 
     lcml_dsp->NodeInfo.nNumOfDLLs = OMX_H264DEC_NUM_DLLS;
+    nFrameWidth = pComponentPrivate->pOutPortDef->format.video.nFrameWidth;
+    nFrameHeight = pComponentPrivate->pOutPortDef->format.video.nFrameHeight;
+    
+    // vktx63 : Contents blocking 720p over-frame.
+    if( ((nFrameWidth > 1280) || (nFrameHeight > 720)) 
+#if defined(FEATURE_COMPOSITE_TVOUT)
+        || !checkIfTVOUTOnDisplay(nFrameWidth)
+#endif //defined(FEATURE_COMPOSITE_TVOUT)
+      )
+    {
+        eError = OMX_ErrorUnsupportedSetting;
+        goto EXIT;
+    }
+    // Video Filter : Contents blocking 720p over-frame.
+    // vktx63 : Contents blocking 720p over-frame.
+    else if(nFrameWidth * nFrameHeight > 880 * 480) /* vktx63 : LIBtt62027 : original : 880 * 720 */
+    {
+        lcml_dsp->NodeInfo.AllUUIDs[0].uuid = (struct DSP_UUID *)&H264VDSOCKET_TI_UUID;
+        strcpy ((char*)lcml_dsp->NodeInfo.AllUUIDs[0].DllName,(char*)H264720P_DEC_NODE_DLL);
+        lcml_dsp->NodeInfo.AllUUIDs[0].eDllType = DLL_NODEOBJECT;
+
+        lcml_dsp->NodeInfo.AllUUIDs[1].uuid = (struct DSP_UUID *)&H264VDSOCKET_TI_UUID;
+        strcpy ((char*)lcml_dsp->NodeInfo.AllUUIDs[1].DllName,(char*)H264720P_DEC_NODE_DLL);
+        lcml_dsp->NodeInfo.AllUUIDs[1].eDllType = DLL_DEPENDENT;
+    }
+    else
+    {
     lcml_dsp->NodeInfo.AllUUIDs[0].uuid = (struct DSP_UUID *)&H264VDSOCKET_TI_UUID;
     strcpy ((char*)lcml_dsp->NodeInfo.AllUUIDs[0].DllName,(char*)H264_DEC_NODE_DLL);
     lcml_dsp->NodeInfo.AllUUIDs[0].eDllType = DLL_NODEOBJECT;
@@ -7063,6 +7119,7 @@ OMX_ERRORTYPE VIDDEC_InitDSP_H264Dec(VIDDEC_COMPONENT_PRIVATE* pComponentPrivate
     lcml_dsp->NodeInfo.AllUUIDs[1].uuid = (struct DSP_UUID *)&H264VDSOCKET_TI_UUID;
     strcpy ((char*)lcml_dsp->NodeInfo.AllUUIDs[1].DllName,(char*)H264_DEC_NODE_DLL);
     lcml_dsp->NodeInfo.AllUUIDs[1].eDllType = DLL_DEPENDENT;
+    }
 
     lcml_dsp->NodeInfo.AllUUIDs[2].uuid = (struct DSP_UUID *)&USN_UUID;
     strcpy ((char*)lcml_dsp->NodeInfo.AllUUIDs[2].DllName,(char*)USN_DLL);
@@ -7258,18 +7315,30 @@ OMX_ERRORTYPE VIDDEC_InitDSP_Mpeg4Dec(VIDDEC_COMPONENT_PRIVATE* pComponentPrivat
 
     nFrameWidth = (nFrameWidth + 0x0f) & ~0x0f;
     nFrameHeight = (nFrameHeight + 0x0f) & ~0x0f;
-    if (nFrameWidth * nFrameHeight > 880 * 720)
+    // vktx63 : Contents blocking 720p over-frame.
+    if( ((nFrameWidth > 1280) || (nFrameHeight > 720)) 
+#if defined(FEATURE_COMPOSITE_TVOUT)
+        || !checkIfTVOUTOnDisplay(nFrameWidth)
+#endif //defined(FEATURE_COMPOSITE_TVOUT)
+         )
     {
-        lcml_dsp->NodeInfo.AllUUIDs[0].uuid = (struct DSP_UUID *)&MP4D720PSOCKET_TI_UUID;
+        eError = OMX_ErrorUnsupportedSetting;
+        goto EXIT;
+    }
+    // VideoFilter : Contents blocking 720p over-frame.
+    // vktx63 : Contents blocking 720p over-frame.
+    else if(nFrameWidth * nFrameHeight > 880 * 480) /* vktx63 : LIBtt62027 : original : 880 * 720 */
+    {
+        lcml_dsp->NodeInfo.AllUUIDs[0].uuid = (struct DSP_UUID *)&MP4DSOCKET_TI_UUID;
         strcpy ((char*)lcml_dsp->NodeInfo.AllUUIDs[0].DllName,(char*)MP4720P_DEC_NODE_DLL);
         lcml_dsp->NodeInfo.AllUUIDs[0].eDllType = DLL_NODEOBJECT;
 
-        lcml_dsp->NodeInfo.AllUUIDs[1].uuid = (struct DSP_UUID *)&MP4D720PSOCKET_TI_UUID;
+        lcml_dsp->NodeInfo.AllUUIDs[1].uuid = (struct DSP_UUID *)&MP4DSOCKET_TI_UUID;
         strcpy ((char*)lcml_dsp->NodeInfo.AllUUIDs[1].DllName,(char*)MP4720P_DEC_NODE_DLL);
         lcml_dsp->NodeInfo.AllUUIDs[1].eDllType = DLL_DEPENDENT;
 
         pComponentPrivate->eMBErrorReport.bEnabled = FALSE;
-        pComponentPrivate->MPEG4Codec_IsTI = FALSE;
+        pComponentPrivate->MPEG4Codec_IsTI = TRUE;
     }
     else
     {
@@ -9224,3 +9293,45 @@ OMX_ERRORTYPE DecrementCount (OMX_U8 * pCounter, pthread_mutex_t *pMutex) {
     return eError;
 }
 
+// vktx63 : Contents blocking over-width contents for TVOUT. 
+// w21129 : this fuctions is very highly dependent on H/W Tvout device, 
+//  it just only be adapted a device that has Tvout chip & has composite compatable port.
+#if defined(FEATURE_COMPOSITE_TVOUT)
+OMX_BOOL checkIfTVOUTOnDisplay(int mVideoWidth)
+{
+  OMX_BOOL ret = OMX_FALSE;
+  int fd_sys;
+  char pBuffer[16];
+
+  if ((fd_sys = open(TVOUT_DETECTION_SYSFS_PATH, O_RDONLY)) > 0)
+  {
+      read(fd_sys, pBuffer, sizeof(pBuffer));
+      if (!strncmp(pBuffer, TVOUT_DETECTION_READ_ATTACH, 2))
+      {
+        // tv out cable attached, check width
+        if (mVideoWidth > TVOUT_OVERLAY_WIDTH_MAX)
+        {
+          // can't be displayed the content
+          ret = OMX_FALSE;
+        }
+        else
+        {
+          ret = OMX_TRUE;
+        }
+      }
+      else
+      {
+        // tv out detached, so should be played a content
+        ret = OMX_TRUE;
+      }
+      close(fd_sys);
+  }
+  else
+  {
+    ret = OMX_TRUE;
+  }
+  
+  return ret;
+  // vktx63 : Contents blocking over-width contents for TVOUT.
+}
+#endif //defined(FEATURE_COMPOSITE_TVOUT)

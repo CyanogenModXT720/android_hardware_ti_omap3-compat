@@ -47,6 +47,7 @@
 #define V4L2_CID_PRIV_COLORKEY_EN	(V4L2_CID_PRIVATE_BASE \
 						+ V4L2_CID_PRIV_OFFSET + 2)
 
+#define V4L2_CID_PRIVATE_DECIMATE_BY_2  (V4L2_CID_PRIVATE_BASE + 0x921)
 
 
 int v4l2_overlay_get(int name) {
@@ -478,6 +479,18 @@ int v4l2_overlay_set_local_alpha(int fd, int enable)
         fbuf.flags &= ~V4L2_FBUF_FLAG_LOCAL_ALPHA;
 
     ret = v4l2_overlay_ioctl(fd, VIDIOC_S_FBUF, &fbuf, "enable global alpha");
+
+    return ret;
+}
+
+int v4l2_overlay_set_decimate_by_2(int fd, int enable)
+{
+    int ret;
+    struct v4l2_control ctrl;
+
+    ctrl.id = V4L2_CID_PRIVATE_DECIMATE_BY_2;
+    ctrl.value = enable;
+    ret = v4l2_overlay_ioctl(fd, VIDIOC_S_CTRL, &ctrl, "set decimate by 2");
 
     return ret;
 }

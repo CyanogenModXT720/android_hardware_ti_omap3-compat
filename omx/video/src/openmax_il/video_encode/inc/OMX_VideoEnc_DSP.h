@@ -49,6 +49,7 @@
 #ifndef UNDER_CE
     #define H264_ENC_NODE_DLL "h264venc_sn.dll64P"
     #define MP4_ENC_NODE_DLL  "m4venc_sn.dll64P"
+    #define MP4720P_ENC_NODE_DLL  "mpeg4ingenc_sn.dll64P"
     #define USN_DLL           "usn.dll64P"
 #else
     #define H264_ENC_NODE_DLL "/windows/h264venc_sn.dll64P"

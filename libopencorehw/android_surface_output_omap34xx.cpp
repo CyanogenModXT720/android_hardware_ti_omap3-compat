@@ -75,6 +75,10 @@ OSCL_EXPORT_REF AndroidSurfaceOutputOmap34xx::AndroidSurfaceOutputOmap34xx() :
 
 OSCL_EXPORT_REF AndroidSurfaceOutputOmap34xx::~AndroidSurfaceOutputOmap34xx()
 {
+    //MOTOROLA Begin, rdtv67, 20101008, Pickup merge from Main-dev
+    if (mInitialized)
+        closeFrameBuf();
+    //MOTOROLA End, Pickup merge from Main-dev
     mUseOverlay = false;
 }
 
@@ -129,6 +133,8 @@ OSCL_EXPORT_REF bool AndroidSurfaceOutputOmap34xx::initCheck()
         mbufferAlloc.bufferSize = iBufferSize;
         if (mbufferAlloc.buffer_address) {
             delete [] mbufferAlloc.buffer_address;
+            //MOTOROLA , rdtv67, 20101008, Pickup merge from Main-dev
+            mbufferAlloc.buffer_address = NULL;
         }
         mbufferAlloc.buffer_address = new uint8*[mbufferAlloc.maxBuffers];
         if (mbufferAlloc.buffer_address == NULL) {

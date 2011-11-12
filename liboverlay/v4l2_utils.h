@@ -28,6 +28,7 @@ int v4l2_overlay_set_rotation(int fd, int degree, int step);
 int v4l2_overlay_set_colorkey(int fd, int enable, int colorkey);
 int v4l2_overlay_set_global_alpha(int fd, int enable, int alpha);
 int v4l2_overlay_set_local_alpha(int fd, int enable);
+int v4l2_overlay_set_decimate_by_2(int fd, int enable);
 
 enum {
   V4L2_OVERLAY_PLANE_GRAPHICS,

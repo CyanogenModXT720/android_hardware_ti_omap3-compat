@@ -1166,6 +1166,8 @@ OMX_U32 NBAMRENC_HandleCommand (AMRENC_COMPONENT_PRIVATE *pComponentPrivate)
                 pthread_mutex_unlock(&pComponentPrivate->ToLoaded_mutex);
             }
 
+            if (!pComponentPrivate->pInputBufferList->numBuffers &&
+                !pComponentPrivate->pOutputBufferList->numBuffers) {
             /* Now Deinitialize the component No error should be returned from
             * this function. It should clean the system as much as possible */
             NBAMRENC_CleanupInitParams(pComponentPrivate->pHandle);
@@ -1192,6 +1194,11 @@ OMX_U32 NBAMRENC_HandleCommand (AMRENC_COMPONENT_PRIVATE *pComponentPrivate)
             pComponentPrivate->bInitParamsInitialized = 0;
             pComponentPrivate->bLoadedCommandPending = OMX_FALSE;
             pComponentPrivate->bLoadedWaitingFreeBuffers = OMX_FALSE;
+        }
+        else {
+            pComponentPrivate->bLoadedWaitingFreeBuffers = OMX_TRUE;
+            OMX_PRBUFFER2(pComponentPrivate->dbg, "Skipped this section because buffers not yet freed\n");
+        }
             break;
 
         case OMX_StatePause:

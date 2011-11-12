@@ -23,8 +23,10 @@
 #include "pvmf_format_type.h"
 #include "oscl_stdstring.h"
 
-#define WVGA_MAX_WIDTH 900
-#define WVGA_MAX_HEIGHT WVGA_MAX_WIDTH
+// vktx63 : 864 is original. modified for 720p features
+#define WVGA_MAX_WIDTH 1280
+// vktx63 : WVGA_MAX_WIDTH is original. modified for 720p features.
+#define WVGA_MAX_HEIGHT 720
 #define TI_VID_DEC "OMX.TI.Video.Decoder"
 typedef struct
 {
