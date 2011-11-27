@@ -35,7 +35,8 @@ public:
             const sp<ISurface> &surface,
             size_t displayWidth, size_t displayHeight,
             size_t decodedWidth, size_t decodedHeight,
-            OMX_COLOR_FORMATTYPE colorFormat);
+            OMX_COLOR_FORMATTYPE colorFormat,
+            int32_t rotationDegrees);
 
     virtual ~TIHardwareRenderer();
 
@@ -49,6 +50,7 @@ private:
     size_t mDisplayWidth, mDisplayHeight;
     size_t mDecodedWidth, mDecodedHeight;
     OMX_COLOR_FORMATTYPE mColorFormat;
+    int32_t mRotationDegrees;
     status_t mInitCheck;
     size_t mFrameSize;
     sp<Overlay> mOverlay;
