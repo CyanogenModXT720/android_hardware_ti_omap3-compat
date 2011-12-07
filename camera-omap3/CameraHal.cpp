@@ -68,24 +68,21 @@ typedef struct {
 
 int CameraHal::camera_device = 0;
 wp<CameraHardwareInterface> CameraHal::singleton;
-const char CameraHal::supportedPictureSizes [] = "3264x2448,2560x2048,2048x1536,1600x1200,1280x1024,1152x968,1280x960,800x600,640x480,320x240";
-const char CameraHal::supportedPreviewSizes [] = "1280x720,992x560,864x480,800x480,720x576,720x480,768x576,640x480,320x240,352x288,240x160,176x144,128x96";
-const char CameraHal::supportedFPS [] = "33,30,25,24,20,15,10";
-const char CameraHal::supportedThumbnailSizes []= "512x384,320x240,80x60,0x0";
+const char CameraHal::supportedPictureSizes [] = "3264x2448,3264x1840,2592x1936,2048x1536,1600x1200,1280x960,640x480";
+const char CameraHal::supportedPreviewSizes [] = "1280x720,848x480,800x448,720x576,720x480,640x480,352x288,320x240,176x144";
+const char CameraHal::supportedFPS [] = "30,25,24,20,15,10,5";
+const char CameraHal::supportedThumbnailSizes []= "320x240,320x180,176x144,160x120,160x90,0x0";
 const char CameraHal::PARAMS_DELIMITER []= ",";
 
-const supported_resolution CameraHal::supportedPictureRes[] = { {3264, 2448} , {2560, 2048} ,
-                                                     {2048, 1536} , {1600, 1200} ,
-                                                     {1280, 1024} , {1152, 968} ,
-                                                     {1280, 960} , {800, 600},
-                                                     {640, 480}   , {320, 240} };
+const supported_resolution CameraHal::supportedPictureRes[] = { {3264, 2448} , {3264, 1840} ,
+                                                     {2592, 1936} , {2048, 1536} ,
+                                                     {1600, 1200} , {1280, 960} ,
+                                                     {640, 480}    };
 
-const supported_resolution CameraHal::supportedPreviewRes[] = { {1280, 720}, {800, 480},
-                                                     {720, 576}, {720, 480},
-                                                     {992, 560}, {864, 480}, {848, 480},
-                                                     {768, 576}, {640, 480},
-                                                     {320, 240}, {352, 288}, {240, 160},
-                                                     {176, 144}, {128, 96}};
+const supported_resolution CameraHal::supportedPreviewRes[] = { {1280, 720}, {848, 480},
+                                                     {800, 448}, {720, 576},
+                                                     {720, 480}, {640, 480}, {352, 288},
+                                                     {320, 240}, {176, 144}};
 
 int camerahal_strcat(char *dst, const char *src, size_t size)
 {
@@ -2000,9 +1997,12 @@ int CameraHal::ICapturePerform(){
     mParameters.getPictureSize(&image_width, &image_height);
     mParameters.getPreviewSize(&preview_width, &preview_height);
 
-    LOGD("Picture Size: Width = %d \tHeight = %d", image_width, image_height);
 
     image_rotation = rotation;
+
+
+    LOGD("Picture Size: Width = %d \tHeight = %d \trotation is ", image_width, image_height, image_rotation);
+
     image_zoom = zoom_step[mZoomTargetIdx];
 
     format.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
@@ -2294,7 +2294,7 @@ int CameraHal::ICapturePerform(){
         exif_buffer *exif_buf = get_exif_buffer(&mExifParams, gpsLocation);
 
 		PPM("BEFORE JPEG Encode Image");
-		LOGE(" outbuffer = 0x%x, jpegSize = %d, yuv_buffer = 0x%x, yuv_len = %d, image_width = %d, image_height = %d, quality = %d, mippMode =%d", outBuffer , jpegSize, yuv_buffer, yuv_len, image_width, image_height, quality,mippMode);
+		LOGE(" outbuffer = 0x%x, jpegSize = %d, yuv_buffer = 0x%x, yuv_len = %d, image_width = %d, image_height = %d, quality = %d, mippMode =%d ,rotation=%d", outBuffer , jpegSize, yuv_buffer, yuv_len, image_width, image_height, quality,mippMode, image_rotation);
 		jpegEncoder->encodeImage((uint8_t *)outBuffer , jpegSize, yuv_buffer, yuv_len,
 				image_width, image_height, quality, exif_buf, jpegFormat, DEFAULT_THUMB_WIDTH, DEFAULT_THUMB_HEIGHT, image_width, image_height,
 				image_rotation, image_zoom, 0, 0, image_width, image_height);
@@ -3495,7 +3495,7 @@ status_t CameraHal::setParameters(const CameraParameters &params)
         }
 
         mippMode = mParameters.getInt(KEY_IPP);
-        LOGD("mippMode=%d", mippMode);
+        LOGD("mippMode=%d \trotation=%d", mippMode,rotation);
 
         mIPPToEnable = true;
     }
@@ -4070,9 +4070,11 @@ status_t CameraHal::setParameters(const CameraParameters &params)
 
         if(mParameters.getInt(KEY_ROTATION_TYPE) == ROTATION_EXIF) {
             mExifParams.rotation = rotation;
+	    LOGD("just tried to set exif orientation %d", rotation);
             rotation = 0; // reset rotation so encoder doesn't not perform any rotation
         } else {
             mExifParams.rotation = -1;
+	    LOGD("just failed to set exif orientation %d because key_rotation_type is not rotation_exif is %d", rotation, mParameters.getInt(KEY_ROTATION_TYPE));
         }
 
         if ((caf != -1) && (mcaf != caf)){
