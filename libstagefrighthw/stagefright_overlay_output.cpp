@@ -38,5 +38,3 @@ VideoRenderer *createRenderer(
 {
     return createRendererWithRotation(surface, componentName, colorFormat,
                           displayWidth, displayHeight,
-                          decodedWidth, decodedHeight, 0);
-}

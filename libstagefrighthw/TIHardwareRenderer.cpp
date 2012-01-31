@@ -72,6 +72,7 @@ TIHardwareRenderer::TIHardwareRenderer(
             mRotationDegrees = 0;
             break;
     }
+
     sp<OverlayRef> ref = mISurface->createOverlay(
             mDecodedWidth, mDecodedHeight, OVERLAY_FORMAT_CbYCrY_422_I, mRotationDegrees);
 

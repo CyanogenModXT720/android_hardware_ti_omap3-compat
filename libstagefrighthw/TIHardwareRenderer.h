@@ -57,6 +57,7 @@ private:
     Vector<void *> mOverlayAddresses;
     bool mIsFirstFrame;
     size_t mIndex;
+    int32_t mRotationDegrees;
 
     TIHardwareRenderer(const TIHardwareRenderer &);
     TIHardwareRenderer &operator=(const TIHardwareRenderer &);
