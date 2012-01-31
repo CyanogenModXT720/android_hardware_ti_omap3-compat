@@ -386,10 +386,6 @@ OMX_ERRORTYPE TIOMX_FreeHandle (OMX_HANDLETYPE hComponent)
                         componentTable[refIndex].pHandle[handleIndex] = NULL;
                     }
                     componentTable[refIndex].refCount -= 1;
-                }
-                else
-                {
-                    componentTable[refIndex].refCount -= 1;
                     componentTable[refIndex].pHandle[handleIndex] = NULL;
                 }
                 dlclose(pModules[i]);

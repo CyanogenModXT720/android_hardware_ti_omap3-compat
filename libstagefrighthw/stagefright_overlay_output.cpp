@@ -30,11 +30,13 @@ VideoRenderer *createRendererWithRotation(
 }
 
 VideoRenderer *createRenderer(
-                const sp<ISurface> &surface,
-                const char *componentName,
-                OMX_COLOR_FORMATTYPE colorFormat,
-                size_t displayWidth, size_t displayHeight,
-                size_t decodedWidth, size_t decodedHeight)
-{
-    return createRendererWithRotation(surface, componentName, colorFormat,
-                          displayWidth, displayHeight,
+        const sp<ISurface> &surface,
+        const char *componentName,
+        OMX_COLOR_FORMATTYPE colorFormat,
+        size_t displayWidth, size_t displayHeight,
+        size_t decodedWidth, size_t decodedHeight) {
+    return createRendererWithRotation(surface, componentName,
+            colorFormat, displayWidth, displayHeight,
+            decodedWidth, decodedHeight, 0);
+}
+
