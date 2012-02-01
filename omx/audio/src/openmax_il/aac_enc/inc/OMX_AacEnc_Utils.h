@@ -587,8 +587,6 @@ typedef struct AACENC_COMPONENT_PRIVATE
 
     OMX_TICKS temp_TS;
 
-    OMX_TICKS temp_TS;
-
     struct OMX_TI_Debug dbg;
 
     /* Reference count for pending state change requests */
