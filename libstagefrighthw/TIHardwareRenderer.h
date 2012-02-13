@@ -50,7 +50,6 @@ private:
     size_t mDisplayWidth, mDisplayHeight;
     size_t mDecodedWidth, mDecodedHeight;
     OMX_COLOR_FORMATTYPE mColorFormat;
-    int32_t mRotationDegrees;
     status_t mInitCheck;
     size_t mFrameSize;
     sp<Overlay> mOverlay;
